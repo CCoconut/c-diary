@@ -13,7 +13,7 @@ def diary_write():
 	diary_entry.close();
 
 def diary_log():
-	diary_log = open("Entry Dates", "w");
+	diary_log = open("Entry Dates", "a");
 	diary_log.write(str(date) + "\n");
 	diary_log.close();
 
