@@ -1,19 +1,22 @@
 #!/usr/bin/env python
-import os.path
-import datetime
+import os.path;
+import datetime;
 
-program_open = 1
+# Version 0.2.2: P-Diary will now always write and read files to/from whatever directory the script is in.
+
+program_open = 1;
+directory = os.path.dirname(os.path.realpath(__file__));
 
 # This function writes input data to a text file with today's date as a filename and header
 def diary_write():
-	diary_entry = open(str(date), "w");
+	diary_entry = open(os.path.join(directory, str(date)), "w");
 	diary_entry.write(str(date) + "\n");
 	dream = input("Write your entry here: \n");
 	diary_entry.write(dream);
 	diary_entry.close();
 
 def diary_log():
-	diary_log = open("Entry Dates", "a");
+	diary_log = open(os.path.join(directory, "Entry Dates"), "a");
 	diary_log.write(str(date) + "\n");
 	diary_log.close();
 
@@ -24,23 +27,22 @@ def diary_read():
 		read_entry_yes = input("\nWhat is the date of the entry? (yyyy-mm-dd) If you want to stop reading, type stop: ");
 		if read_entry_yes == "stop":
 			break
-		elif os.path.lexists(read_entry_yes) == False:
+		elif os.path.lexists(os.path.join(directory, read_entry_yes)) == False:
 			print("\nYou didn't write an entry that day.");
 			continue
 		else:
-			diary_read = open(read_entry_yes, "r");
+			diary_read = open(os.path.join(directory, read_entry_yes), "r");
 			print("\n" + diary_read.read());
 			diary_read.close();
 			continue
 
-# Version 0.2.1: Now asks for a command instead of if the user dreamt. This is to make it more general than
-# just a dream journal (can be used as any kind of diary now). The while loop ensures that it will always
-# go back to 'What do you want to do?' before the program quits. Also logs dates that have entries.
+# The while loop ensures that it always goes back to 'What do you want to do?' unless the user
+# exits the program.
 while program_open == 1:
 	answer = input("\nWhat do you want to do? (Type 'help' for a list of commands): ");
 	if answer == 'write':
 		date = datetime.date.today();
-		if os.path.lexists(str(date)) == True:
+		if os.path.lexists(os.path.join(directory, str(date))) == True:
 			print("\nYou already wrote an entry for today!");
 		else:
 			diary_write();
@@ -50,9 +52,9 @@ while program_open == 1:
 	elif answer == 'help':
 		print("\nValid commands are: " + "\n'write' (write an entry)" + "\n'read' (read entries)" + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'quit'");
 	elif answer == 'entries':
-		entry_dates = open("Entry Dates", "r");
+		entry_dates = open(os.path.join(directory, "Entry Dates"), "r");
 		print("\n" + entry_dates.read());
-	elif answer == 'quit' or 'exit':
+	elif answer == 'quit' or answer == 'exit':
 		break
 	else:
 		print("\nThat is not a valid command.");
