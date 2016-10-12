@@ -2,10 +2,16 @@
 import os;
 import datetime;
 
-# Version 0.3: P-Diary now supports multiple diaries. Each one is its own directory. Code hasn't been cleaned up yet.
+# Version 0.3: p-diary now supports multiple diaries. Each one is its own directory.
 
+directory = os.path.join(os.path.expanduser('~'),'p-diary');
 program_open = 1;
-directory = os.path.join(os.path.expanduser('~'),'Diary');
+
+if os.path.exists(os.path.join(os.path.expanduser('~'),'p-diary')) == True:
+	print("\nWelcome!");
+else:
+	print("\nWelcome to p-diary! You have no diaries, so type 'new' in the next prompt!");
+	os.mkdir(directory);
 
 def create_directory():
 	new_diary = input("Name your diary (type 'cancel' to go back): \n");
@@ -17,6 +23,10 @@ def create_directory():
 		new_diary_log.write(new_diary + "\n");
 		new_diary_log.close();
 
+def Diaries():
+	see_diaries = open(os.path.join(directory, "Diaries"), "r");
+	print("\n" + see_diaries.read());
+
 # This function writes input data to a text file with today's date as a filename and header
 def diary_write():
 	diary_entry = open(os.path.join(set_directory, str(date)), "w");
@@ -24,10 +34,6 @@ def diary_write():
 	dream = input("Write your entry here: \n");
 	diary_entry.write(dream);
 	diary_entry.close();
-
-def Diaries():
-	see_diaries = open(os.path.join(directory, "Diaries"), "r");
-	print("\n" + see_diaries.read());
 
 # This function writes an entry date to a file that can be called up as a reminder
 def diary_log():
