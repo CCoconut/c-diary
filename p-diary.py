@@ -1,22 +1,24 @@
 #/!/usr/bin/env python
-import os;
-import datetime;
+import os, datetime, textwrap;
 
-# Version 0.3: p-diary now supports multiple diaries. Each one is its own directory.
+# Version 0.3.1: p-diary now supports multiple diaries. Each one is its own directory.
 
 directory = os.path.join(os.path.expanduser('~'),'p-diary');
 program_open = 1;
 
-if os.path.exists(os.path.join(os.path.expanduser('~'),'p-diary')) == True:
+if os.path.exists(directory) == True:
 	print("\nWelcome!");
 else:
 	print("\nWelcome to p-diary! You have no diaries, so type 'new' in the next prompt!");
 	os.mkdir(directory);
 
+# This function creates a new diary.
 def create_directory():
-	new_diary = input("Name your diary (type 'cancel' to go back): \n");
+	new_diary = input("\nName your diary (type 'cancel' to go back): \n");
 	if new_diary == "cancel":
 		print("\nOkay.");
+	elif new_diary == "new" or new_diary == "exit" or new_diary == "quit" or new_diary == "help" or new_diary == "diaries":
+		print("\nThat is not a valid name! That is reserved for a command!");
 	else:
 		os.mkdir(os.path.join(directory,new_diary));
 		new_diary_log = open(os.path.join(directory, "Diaries"), "a");
@@ -27,19 +29,24 @@ def Diaries():
 	see_diaries = open(os.path.join(directory, "Diaries"), "r");
 	print("\n" + see_diaries.read());
 
-# This function writes input data to a text file with today's date as a filename and header
-def diary_write():
-	diary_entry = open(os.path.join(set_directory, str(date)), "w");
-	diary_entry.write(str(date) + "\n");
-	dream = input("Write your entry here: \n");
-	diary_entry.write(dream);
-	diary_entry.close();
-
 # This function writes an entry date to a file that can be called up as a reminder
 def diary_log():
 	diary_log = open(os.path.join(set_directory, "Entry Dates"), "a");
 	diary_log.write(str(date) + "\n");
 	diary_log.close();
+
+# This function writes input data to a text file with today's date as a filename and header
+def diary_write():
+	diary_entry = open(os.path.join(set_directory, str(date)), "w");
+	dream = input("\nWrite your entry here (type 'cancel' and press enter to go back): \n");
+	if dream == 'cancel':
+		diary_entry.close();
+		os.remove(os.path.join(set_directory, str(date)));
+	else:
+		diary_entry.write("(" + str(date) + ")" + "\n");
+		diary_entry.write(dream);
+		diary_entry.close();
+		diary_log();
 
 # This function lets you read the entry dates file to see which dates have entries
 def diary_entries():
@@ -51,28 +58,33 @@ def diary_entries():
 def diary_read():
 	while answer2 == 'read':
 		read_entry_yes = input("\nWhat is the date of the entry? (Type 'help' to see other commands): ");
-		if read_entry_yes == "stop":
+		if read_entry_yes == "exit":
 			break
 		elif read_entry_yes == "entries":
 			diary_entries();
 		elif read_entry_yes == "help":
-			print("\nValid commands are: " + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'stop' (stop reading entries)" + "\nInput an entry date to read it");
+			print("\nValid commands are: " + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'today' (read today's entry)" + "\n'exit' (stop reading entries)" + "\nInput an entry date to read it");
+		elif read_entry_yes == "today":
+			diary_read_today = open(os.path.join(set_directory, str(datetime.date.today())), "r");
+			print("\n" + textwrap.fill(diary_read_today.read(), 80));
+			diary_read_today.close();
+			continue
 		elif os.path.lexists(os.path.join(set_directory, read_entry_yes)) == False:
 			print("\nYou didn't write an entry that day (or you typed an invalid command!)");
 			continue
 		else:
 			diary_read = open(os.path.join(set_directory, read_entry_yes), "r");
-			print("\n" + diary_read.read());
+			print("\n" + textwrap.fill(diary_read.read(), 80));
 			diary_read.close();
 			continue
 
 # Main body of program. Asks for which diary to look at then gives the option to read, see entries, and write)
 while program_open == 1:
-	answer1 = input("\nWhich diary do you want to look at? (type 'help' for commands) ");
+	answer1 = input("\nWhich diary do you want to look at? (type 'help' for commands): ");
 	if answer1 == "new":
 		create_directory();
 	elif answer1 == "help":
-		print("\nValid commands are: " + "\n'new' (create a new diary)" + "\n'diaries' (see a list of your diaries)" + "\n'help' (display this menu)" + "\n'quit' (exit)");
+		print("\nValid commands are: " + "\n'new' (create a new diary)" + "\n'diaries' (see a list of your diaries)" + "\n'help' (display this menu)" + "\n'exit' (exit)" + "\nWrite the name of the diary you want to look at");
 	elif answer1 == "diaries":
 		Diaries();
 	elif answer1 == "quit" or answer1 =="exit":
@@ -92,11 +104,10 @@ while program_open == 1:
 						print("\nYou already wrote an entry in this diary today!");
 					else:
 						diary_write();
-						diary_log();
 				elif answer2 == 'read':
 					diary_read();
 				elif answer2 == 'help':
-					print("\nValid commands are: " + "\n'write' (write an entry)" + "\n'read' (read entries)" + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'quit'");
+					print("\nValid commands are: " + "\n'write' (write an entry)" + "\n'read' (read entries)" + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'exit'");
 				elif answer2 == 'entries':
 					diary_entries();
 				elif answer2 == 'quit' or answer2 == 'exit':
