@@ -1,7 +1,7 @@
-#/!/usr/bin/env python
+#/!/usr/bin/env python3
 import os, datetime, textwrap;
 
-# Version 0.3.2: p-diary now supports multiple diaries. Each one is its own directory. Also asks for confirmation before sending an entry.
+# Version 0.3.3: p-diary now supports multiple diaries. Each one is its own directory. Now supports writing to the same entry over and over.
 
 directory = os.path.join(os.path.expanduser('~'),'p-diary');
 program_open = 1;
@@ -31,19 +31,19 @@ def Diaries():
 
 # This function writes an entry date to a file that can be called up as a reminder
 def diary_log():
-	diary_log = open(os.path.join(set_directory, "Entry Dates"), "a");
-	diary_log.write(str(date) + "\n");
-	diary_log.close();
+	if os.path.lexists(os.path.join(set_directory, str(date))) == False:
+		diary_log = open(os.path.join(set_directory, "Entry Dates"), "a");
+		diary_log.write(str(date) + "\n");
+		diary_log.close();
+	else:
+		pass
 
 # This function writes input data to a text file with today's date as a filename and header
 def diary_write():
-	global diary_entry;
-	diary_entry = open(os.path.join(set_directory, str(date)), "w");
 	global dream;
 	dream = input("\nWrite your entry here (type 'cancel' and press enter to go back): \n");
 	if dream == 'cancel':
-		diary_entry.close();
-		os.remove(os.path.join(set_directory, str(date)));
+		print("\nOkay.");
 	else:
 		diary_write_confirm();
 
@@ -51,13 +51,17 @@ def diary_write():
 def diary_write_confirm():
 	confirm = input("\nDo you want to write this entry? (y/n): ");
 	if confirm.lower()[0] == 'y':
-		diary_entry.write("(" + str(date) + ")" + "\n");
+		if os.path.lexists(os.path.join(set_directory, str(date))) == False:
+			diary_log();
+			diary_entry = open(os.path.join(set_directory, str(date)), "a");
+			diary_entry.write("(" + str(date) + ")" + "\n");
+		else:	
+			diary_entry = open(os.path.join(set_directory, str(date)), "a");
+			diary_entry.write("\n");
 		diary_entry.write(dream);
 		diary_entry.close();
-		diary_log();
 	elif confirm.lower()[0] == 'n':
-		diary_entry.close();
-		os.remove(os.path.join(set_directory, str(date)));
+		print("\nOkay.");
 	else:
 		print("\nPlease use 'y' or 'n'.");
 		diary_write_confirm();
@@ -68,7 +72,7 @@ def diary_entries():
 	print("\n" + entry_dates.read());
 
 # This function reads text file contents and prints it for the user to read. Need to find a way to make it
-# only able to read files with YYYY-MM-DD as a filename format. (does not yet do regex)
+# (does not yet do regex)
 def diary_read():
 	while answer2 == 'read':
 		read_entry_yes = input("\nWhat is the date of the entry? (Type 'help' to see other commands): ");
@@ -80,7 +84,7 @@ def diary_read():
 			print("\nValid commands are: " + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'today' (read today's entry)" + "\n'exit' (stop reading entries)" + "\nInput an entry date to read it");
 		elif read_entry_yes == "today" and os.path.lexists(os.path.join(set_directory, str(datetime.date.today()))) == True:
 			diary_read_today = open(os.path.join(set_directory, str(datetime.date.today())), "r");
-			print("\n" + textwrap.fill(diary_read_today.read(), 80));
+			print("\n" + textwrap.fill(diary_read_today.read(), 80, replace_whitespace=False));
 			diary_read_today.close();
 		elif os.path.lexists(os.path.join(set_directory, read_entry_yes)) == False:
 			print("\nYou didn't write an entry that day (or you typed an invalid command!)");
@@ -100,6 +104,8 @@ while program_open == 1:
 		Diaries();
 	elif answer1 == "quit" or answer1 =="exit":
 		break
+	elif answer1 == "":
+		print("\nYou can't have an unnamed diary!");
 	else:
 		global set_directory;
 		set_directory = os.path.join(directory,answer1);
@@ -111,22 +117,30 @@ while program_open == 1:
 				if answer2 == 'write':
 					date = datetime.date.today();
 					if os.path.lexists(os.path.join(set_directory, str(date))) == True:
-						print("\nYou already wrote an entry in this diary today!");
+						confirm = input("\nYou already wrote an entry today! Do you want to add to it? (y/n): ");
+						if confirm == 'y':
+							diary_write();
+						elif confirm == 'n':
+							print("\nOkay.");
+						else:
+							print("\nPlease use 'y' or 'n'.")
 					else:
 						diary_write();
 				elif answer2 == 'read':
 					diary_read();
 				elif answer2 == 'help':
-					print("\nValid commands are: " + "\n'write' (write an entry)" + "\n'read' (read entries)" + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'exit'");
+					print("\nValid commands are: " + "\n'write' (write an entry)" + "\n'read' (read entries)" + "\n'help' (display this menu)" + "\n'entries' (see what dates have entries)" + "\n'close' (close the diary)");
 				elif answer2 == 'entries':
 					diary_entries();
-				elif answer2 == 'quit' or answer2 == 'exit':
+				elif answer2 == 'quit' or answer2 == 'exit' or answer2 == 'close':
 					break
 				else:
 					print("\nThat is not a valid command.");
 print("\nHave a nice day!\n");
 
 # List of bugs or changes I need to implement:
-# Confirmation doesn't take you back to edit your entry. I want to figure out a way to do this.
+# multi-paragraph writing
+# make 'exit' exit the program and 'close' close the diary/reading, etc.
+# regex for reading entries (YYYY-MM-DD format)
 # Better entry management - right now you can only access files by typing in their date or 'today'. I'd like to implement entry numbers to make it easier.
 # Calendars
